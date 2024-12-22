@@ -10,32 +10,6 @@
   hostname = ""
   omit_hostname = false
 
-[[inputs.cpu]]
-  percpu = true
-  totalcpu = true
-  collect_cpu_time = false
-  report_active = false
-  core_tags = false
-
-[[inputs.disk]]
-  ignore_fs = ["tmpfs", "devtmpfs", "devfs", "iso9660", "overlay", "aufs", "squashfs"]
-
-# [[inputs.diskio]]
-
-[[inputs.kernel]]
-
-[[inputs.mem]]
-
-[[inputs.processes]]
-
-[[inputs.swap]]
-
-[[inputs.system]]
-
-[[inputs.zfs]]
-  poolMetrics = true
-  datasetMetrics = true
-
 [[outputs.influxdb_v2]]
   urls = {{ influxdb_urls }}
   ## Token for authentication.
@@ -43,18 +17,11 @@
   organization = "tartarus" 
   bucket = "telegraf"
 
+[[inputs.zfs]]
+  poolMetrics = true
+  datasetMetrics = true
+
 [[inputs.sensors]]
-
-# Monitors internet speed using speedtest.net service
-[[inputs.internet_speed]]
-  interval = "6h"
-
-  ## Enable to reduce memory usage
-  memory_saving_mode = true
-  connections = 4
-
-  ## Caches the closest server location
-  cache = true
 
 # Read metrics from SMART storage devices using smartclt's JSON output
 [[inputs.smartctl]]

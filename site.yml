@@ -16,10 +16,10 @@
   roles:
     - tartarus_mail
     - tartarus_zfs
-    # - tartarus_telegraf
+    - tartarus_telegraf
 
 - name: Configure k3s
-  hosts: nas
+  hosts: k3s
   become: true
   tags:
     - k3s
