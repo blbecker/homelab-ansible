@@ -69,19 +69,3 @@
     shell: /bin/zsh
     append: true
     uid: 1000
-
-- name: Create a group for ansible user
-  ansible.builtin.group:
-    name: ansible
-    gid: 9999
-    state: present
-
-- name: Create ansible user
-  ansible.builtin.user:
-    name: ansible
-    group: ansible
-    groups: sudo,ansible
-    shell: /bin/bash
-    append: true
-    comment: "Ansible management user"
-    uid: 9999

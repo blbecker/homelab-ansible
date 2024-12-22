@@ -1,0 +1,42 @@
+---
+# tasks file for tartarus_bootstrap
+- name: Create a group for ansible user
+  tags:
+    - bootstrap
+  ansible.builtin.group:
+    name: ansible
+    gid: 9999
+    state: present
+
+- name: Create ansible user
+  tags:
+    - bootstrap
+  ansible.builtin.user:
+    name: ansible
+    group: ansible
+    groups: sudo,ansible
+    shell: /bin/bash
+    append: true
+    password: '!'
+    comment: "Ansible management user"
+    uid: 9999
+
+- name: Set ansibles ssh public key
+  tags:
+    - bootstrap
+  ansible.posix.authorized_key:
+    user: ansible
+    state: present
+    key: "{{ item }}"
+  with_file:
+    - public_keys/ansible.pub
+
+- name: Configure sudo for ansible user
+  copy:
+    dest: /etc/sudoers.d/ansible
+    content: |
+      ansible ALL=(ALL) NOPASSWD:ALL
+    owner: root
+    group: root
+    mode: '0440'
+    validate: 'visudo -cf %s'
