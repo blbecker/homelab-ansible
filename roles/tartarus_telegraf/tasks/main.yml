@@ -1,0 +1,46 @@
+---
+# tasks file for tartarus.telegraf
+- name: Load secrets
+  ansible.builtin.include_vars: secrets.yml
+
+- name: Add apt_key for debian stable telegraf repo
+  ansible.builtin.apt_key:
+    # id: D8FF8E1F7DF8B07E
+    url: https://repos.influxdata.com/influxdata-archive_compat.key
+
+- name: Enable debian stable repo
+  ansible.builtin.apt_repository:
+    repo: deb https://repos.influxdata.com/debian stable main
+    filename: influxdb
+
+- name: Install telegraf
+  ansible.builtin.apt:
+    pkg:
+      - telegraf
+      - lm-sensors
+    state: present
+    update_cache: true
+
+- name: Allow the telegraf user to sudo smartctl
+  community.general.sudoers:
+    name: allow-smartctl
+    state: present
+    user: telegraf
+    commands:
+      - /usr/sbin/smartctl
+
+- name: Configure telegraf
+  ansible.builtin.template:
+    src: telegraf.conf.j2
+    dest: /etc/telegraf/telegraf.conf
+    mode: "0644"
+    owner: root
+    group: root
+  notify:
+    - Restart telegraf
+
+- name: Start and enable telegraf
+  ansible.builtin.service:
+    name: telegraf
+    state: started
+    enabled: true

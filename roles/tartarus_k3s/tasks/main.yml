@@ -1,0 +1,80 @@
+---
+# tasks file for tartarus.k3s
+- name: Download K3s install script
+  ansible.builtin.get_url:
+    url: https://get.k3s.io/
+    timeout: 120
+    dest: /usr/local/bin/k3s-install.sh
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Make config directory
+  ansible.builtin.file:
+    path: '/etc/rancher/k3s'
+    mode: '0755'
+    state: directory
+
+- name: Copy config values
+  ansible.builtin.template:
+    src: k3s-config.yaml.j2
+    dest: '/etc/rancher/k3s/config.yaml'
+    mode: '0644'
+
+- name: Download K3s binary
+  ansible.builtin.command:
+    cmd: /usr/local/bin/k3s-install.sh
+  environment:
+    INSTALL_K3S_SKIP_START: 'true'
+  changed_when: true
+
+- name: Install longhorn dependencies
+  ansible.builtin.apt:
+    pkg:
+      - open-iscsi
+      - bash
+      - curl
+      - grep
+      - util-linux
+      - nfs-common # NFS is used by the nfs-subdir provisioner, included here for convenience
+    state: present
+    update_cache: true
+
+- name: Start and enable iscsi
+  ansible.builtin.service:
+    name: iscsid
+    state: started
+    enabled: true
+
+- name: Create a datadir for longhorn
+  ansible.builtin.file:
+    path: /mnt/longhorn
+    state: directory
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Create a destiantion for the k3s override file
+  ansible.builtin.file:
+    path: /etc/systemd/system/k3s.service.d
+    state: directory
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Override the k3s unit file to set limits
+  ansible.builtin.template:
+    src: k3s-override.conf.j2
+    dest: /etc/systemd/system/k3s.service.d/override.conf
+    owner: root
+    group: root
+    mode: '0644'
+  notify:
+    - Restart k3s
+
+- name: Start and enable k3s
+  ansible.builtin.systemd:
+    name: k3s
+    state: started
+    enabled: true
+    daemon-reload: true

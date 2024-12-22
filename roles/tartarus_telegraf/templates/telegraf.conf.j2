@@ -1,0 +1,70 @@
+[agent]
+  interval = "10s"
+  round_interval = true
+  metric_batch_size = 1000
+  metric_buffer_limit = 10000
+  collection_jitter = "0s"
+  flush_interval = "10s"
+  flush_jitter = "0s"
+  precision = "0s"
+  hostname = ""
+  omit_hostname = false
+
+[[inputs.cpu]]
+  percpu = true
+  totalcpu = true
+  collect_cpu_time = false
+  report_active = false
+  core_tags = false
+
+[[inputs.disk]]
+  ignore_fs = ["tmpfs", "devtmpfs", "devfs", "iso9660", "overlay", "aufs", "squashfs"]
+
+# [[inputs.diskio]]
+
+[[inputs.kernel]]
+
+[[inputs.mem]]
+
+[[inputs.processes]]
+
+[[inputs.swap]]
+
+[[inputs.system]]
+
+[[inputs.zfs]]
+  poolMetrics = true
+  datasetMetrics = true
+
+[[outputs.influxdb_v2]]
+  urls = {{ influxdb_urls }}
+  ## Token for authentication.
+  token = "{{ influxdb_token }}"
+  organization = "tartarus" 
+  bucket = "telegraf"
+
+[[inputs.sensors]]
+
+# Monitors internet speed using speedtest.net service
+[[inputs.internet_speed]]
+  interval = "6h"
+
+  ## Enable to reduce memory usage
+  memory_saving_mode = true
+  connections = 4
+
+  ## Caches the closest server location
+  cache = true
+
+# Read metrics from SMART storage devices using smartclt's JSON output
+[[inputs.smartctl]]
+  interval = "1h"
+
+  ## Optionally specify the path to the smartctl executable
+  path = "/usr/sbin/smartctl"
+
+  ## Use sudo
+  ## On most platforms used, smartctl requires root access. Setting 'use_sudo'
+  ## to true will make use of sudo to run smartctl. Sudo must be configured to
+  ## allow the telegraf user to run smartctl without a password.
+  use_sudo = true

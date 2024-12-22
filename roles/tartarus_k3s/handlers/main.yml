@@ -1,0 +1,8 @@
+---
+# handlers file for tartarus.k3s
+
+- name: Restart k3s
+  ansible.builtin.systemd:
+    state: restarted
+    daemon-reload: true
+    name: k3s

@@ -1,0 +1,26 @@
+---
+- name: Apply common everywhere
+  hosts: all
+  become: true
+  roles:
+    - common
+
+- name: Apply zfs and telegraf to nas
+  hosts: nas
+  become: true
+  tags:
+    - telegraf
+    - zfs
+    - nas
+  roles:
+    - tartarus_mail
+    - tartarus_zfs
+    - tartarus_telegraf
+
+- name: Configure k3s
+  hosts: nas
+  become: true
+  tags:
+    - k3s
+  roles:
+    - tartarus_k3s

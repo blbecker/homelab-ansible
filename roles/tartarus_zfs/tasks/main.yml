@@ -1,0 +1,92 @@
+---
+- name: Load secrets
+  ansible.builtin.include_vars: secrets.yml
+
+# - name: Enable bullseye backports
+#   ansible.builtin.apt_repository:
+#     repo: deb http://deb.debian.org/debian bullseye-backports main contrib non-free
+#     filename: backports
+
+# - name: Enable bullseye backports src
+#   ansible.builtin.apt_repository:
+#     repo: deb-src http://deb.debian.org/debian bullseye-backports main contrib non-free
+#     filename: backports
+
+- name: Install zfs packages
+  ansible.builtin.apt:
+    pkg:
+      - linux-headers-amd64
+      - nfs-kernel-server
+    state: present
+    update_cache: true
+
+- name: Install zfs backports packages
+  ansible.builtin.apt:
+    pkg:
+      - zfsutils-linux
+      - zfs-dkms
+    # default_release: bullseye-backports
+    state: present
+    clean: true
+    update_cache: true
+
+- name: Configure Zed
+  ansible.builtin.template:
+    src: zed.rc.j2
+    dest: /etc/zfs/zed.d/zed.rc
+    owner: root
+    group: root
+    mode: '0600'
+  notify:
+    - Restart zed
+
+- name: Start and enable zed
+  ansible.builtin.systemd:
+    name: zfs-zed
+    state: started
+    daemon_reload: true
+
+- name: Create scrub timer
+  ansible.builtin.copy:
+    src: zfs-scrub-timer
+    dest: /etc/systemd/system/zfs-scrub@.timer
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Create scrub service
+  ansible.builtin.copy:
+    src: zfs-scrub-service
+    dest: /etc/systemd/system/zfs-scrub@.service
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Enable scrubs on zfs pool
+  ansible.builtin.systemd:
+    name: zfs-scrub@storage.timer
+    state: started
+    enabled: true
+    daemon_reload: true
+
+- name: Install smartd
+  ansible.builtin.apt:
+    name: smartmontools
+    state: present
+
+- name: Start and enable smartd
+  ansible.builtin.service:
+    name: smartd
+    state: started
+    enabled: true
+
+- name: Configure smartd
+  ansible.builtin.template:
+    src: smartd.conf.j2
+    dest: /etc/smartd.conf
+    owner: root
+    group: root
+    mode: '0644'
+  notify:
+    - Restart smartd
+# ZPOOl configured manually

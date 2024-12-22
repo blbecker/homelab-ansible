@@ -1,0 +1,87 @@
+---
+# - name: Update
+#   ansible.builtin.apt:
+#     state: latest
+#     update_cache: true
+
+- name: Refresh package cache
+  ansible.builtin.apt:
+    update_cache: true
+
+- name: Install common packages
+  ansible.builtin.apt:
+    pkg:
+      - vim
+      - sudo
+      - gdisk
+      - wget
+      - curl
+      - gnupg2
+      - lsb-release
+      - ca-certificates
+      - apt-transport-https
+      - software-properties-common
+      - mailutils
+      - zsh
+      - git
+      - rsync
+      - tmux
+    state: present
+    update_cache: true
+
+- name: Configure fs.inotify.max_queued_events
+  ansible.posix.sysctl:
+    name: fs.inotify.max_queued_events
+    value: "16384"
+    sysctl_set: true
+
+- name: Configure fs.inotify.max_user_watches
+  ansible.posix.sysctl:
+    name: fs.inotify.max_user_watches
+    value: "65536"
+    sysctl_set: true
+
+- name: Configure fs.inotify.max_user_instances
+  ansible.posix.sysctl:
+    name: fs.inotify.max_user_instances
+    value: "512"
+    sysctl_set: true
+
+- name: Configure ulimits
+  ansible.builtin.template:
+    src: my-limits.conf.j2
+    dest: /etc/security/limits.d/my-limits.conf
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Create a group for my user
+  ansible.builtin.group:
+    name: blbecker
+    gid: 1000
+    state: present
+
+- name: Create my user
+  ansible.builtin.user:
+    name: blbecker
+    group: blbecker
+    groups: sudo,blbecker
+    shell: /bin/zsh
+    append: true
+    uid: 1000
+
+- name: Create a group for ansible user
+  ansible.builtin.group:
+    name: ansible
+    gid: 9999
+    state: present
+
+- name: Create ansible user
+  ansible.builtin.user:
+    name: ansible
+    group: ansible
+    groups: sudo,ansible
+    shell: /bin/bash
+    append: true
+    comment: "Ansible management user"
+    uid: 9999

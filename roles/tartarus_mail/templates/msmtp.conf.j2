@@ -1,0 +1,11 @@
+account default
+host {{ smtp_host }}
+port {{ smtp_port }}
+tls on
+tls_starttls off
+auth on
+user {{ smtp_username }}
+password {{ smtp_password }}
+auto_from off
+from "{{ smtp_from }}"
+logfile /var/log/msmtp
