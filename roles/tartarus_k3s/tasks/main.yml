@@ -1,13 +1,30 @@
 ---
 # tasks file for tartarus.k3s
-- name: Download K3s install script
-  ansible.builtin.get_url:
-    url: https://get.k3s.io/
-    timeout: 120
-    dest: /usr/local/bin/k3s-install.sh
+- name: Configure fs.inotify.max_queued_events
+  ansible.posix.sysctl:
+    name: fs.inotify.max_queued_events
+    value: "16384"
+    sysctl_set: true
+
+- name: Configure fs.inotify.max_user_watches
+  ansible.posix.sysctl:
+    name: fs.inotify.max_user_watches
+    value: "65536"
+    sysctl_set: true
+
+- name: Configure fs.inotify.max_user_instances
+  ansible.posix.sysctl:
+    name: fs.inotify.max_user_instances
+    value: "512"
+    sysctl_set: true
+
+- name: Configure ulimits
+  ansible.builtin.template:
+    src: my-limits.conf.j2
+    dest: /etc/security/limits.d/my-limits.conf
     owner: root
     group: root
-    mode: '0755'
+    mode: "0644"
 
 - name: Make config directory
   ansible.builtin.file:
@@ -20,6 +37,26 @@
     src: k3s-config.yaml.j2
     dest: '/etc/rancher/k3s/config.yaml'
     mode: '0644'
+
+- name: install k3s
+  block: 
+    - name: Download K3s install script
+      ansible.builtin.get_url:
+        url: https://get.k3s.io/
+        timeout: 120
+        dest: /usr/local/bin/k3s-install.sh
+        owner: root
+        group: root
+        mode: '0755'
+
+    - name: Download K3s binary
+      ansible.builtin.command:
+        cmd: /usr/local/bin/k3s-install.sh
+      environment:
+        INSTALL_K3S_SKIP_START: 'true'
+      changed_when: true
+      
+  creates: /usr/local/bin/k3s-install.sh
 
 - name: Download K3s binary
   ansible.builtin.command:

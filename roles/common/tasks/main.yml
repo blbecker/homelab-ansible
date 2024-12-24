@@ -29,32 +29,6 @@
     state: present
     update_cache: true
 
-- name: Configure fs.inotify.max_queued_events
-  ansible.posix.sysctl:
-    name: fs.inotify.max_queued_events
-    value: "16384"
-    sysctl_set: true
-
-- name: Configure fs.inotify.max_user_watches
-  ansible.posix.sysctl:
-    name: fs.inotify.max_user_watches
-    value: "65536"
-    sysctl_set: true
-
-- name: Configure fs.inotify.max_user_instances
-  ansible.posix.sysctl:
-    name: fs.inotify.max_user_instances
-    value: "512"
-    sysctl_set: true
-
-- name: Configure ulimits
-  ansible.builtin.template:
-    src: my-limits.conf.j2
-    dest: /etc/security/limits.d/my-limits.conf
-    owner: root
-    group: root
-    mode: "0644"
-
 - name: Create a group for my user
   ansible.builtin.group:
     name: blbecker

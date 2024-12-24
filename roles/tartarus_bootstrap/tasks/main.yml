@@ -1,5 +1,9 @@
 ---
 # tasks file for tartarus_bootstrap
+- name: Include secrets
+  ansible.builtin.include_vars: secrets.yml
+  no_log: true
+
 - name: Create a group for ansible user
   tags:
     - bootstrap
@@ -40,3 +44,14 @@
     group: root
     mode: '0440'
     validate: 'visudo -cf %s'
+
+- name: Create an A record for this host
+  community.general.cloudflare_dns:
+    domain: tartarus.us
+    record: '{{ inventory_hostname_short }}'
+    type: A
+    value: '{{ ansible_default_ipv4.address }}'
+    solo: true
+    comment: "Created by Ansible"
+    api_token: '{{ cloudflare_token }}'
+    state: present
