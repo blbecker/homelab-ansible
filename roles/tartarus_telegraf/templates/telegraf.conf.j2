@@ -17,9 +17,11 @@
   organization = "tartarus" 
   bucket = "telegraf"
 
+{% if 'nas' in group_names %}
 [[inputs.zfs]]
   poolMetrics = true
   datasetMetrics = true
+{% endif %}
 
 [[inputs.sensors]]
 

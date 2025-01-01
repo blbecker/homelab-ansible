@@ -19,8 +19,10 @@
     - tartarus_telegraf
 
 - name: Configure k3s
-  hosts: k3s
+  hosts:
+    - k3s
   become: true
+  serial: 1
   tags:
     - k3s
   roles:

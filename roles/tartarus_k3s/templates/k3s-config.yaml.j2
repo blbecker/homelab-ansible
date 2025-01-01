@@ -1,5 +1,23 @@
 ---
+{% if k3s_role == 'server' %}
 write-kubeconfig-mode: "0644"
+
 disable:
     - servicelb
     - traefik
+
+tls-san:
+    - "k8s.tartarus.us"
+
+flannel-backend: wireguard-native
+{% else %}
+
+{% endif %}
+
+{% if node_name is defined %}
+node-name: "{{ node_name }}"
+{% endif %}
+
+
+server: https://k8s.tartarus.us:6443
+

@@ -1,8 +1,16 @@
 ---
 # handlers file for tartarus.k3s
 
-- name: Restart k3s
+- name: Restart k3s server
   ansible.builtin.systemd:
     state: restarted
     daemon-reload: true
     name: k3s
+  when: k3s_role == 'server'
+
+- name: Restart k3s agent
+  ansible.builtin.systemd:
+    state: restarted
+    daemon-reload: true
+    name: k3s-agent
+  when: k3s_role == 'agent'

@@ -1,5 +1,12 @@
 ---
 # tasks file for tartarus.k3s
+- name: Include vars 
+  ansible.builtin.include_vars: main.yml
+
+- name: Include secrets
+  ansible.builtin.include_vars: secrets.yml
+  no_log: true
+
 - name: Configure fs.inotify.max_queued_events
   ansible.posix.sysctl:
     name: fs.inotify.max_queued_events
@@ -37,33 +44,37 @@
     src: k3s-config.yaml.j2
     dest: '/etc/rancher/k3s/config.yaml'
     mode: '0644'
+  notify:
+    - Restart k3s agent
+    - Restart k3s server
 
-- name: install k3s
-  block: 
-    - name: Download K3s install script
-      ansible.builtin.get_url:
-        url: https://get.k3s.io/
-        timeout: 120
-        dest: /usr/local/bin/k3s-install.sh
-        owner: root
-        group: root
-        mode: '0755'
+- name: Download K3s install script
+  ansible.builtin.get_url:
+    url: https://get.k3s.io/
+    timeout: 120
+    dest: /usr/local/bin/k3s-install.sh
+    owner: root
+    group: root
+    mode: '0755'
 
-    - name: Download K3s binary
-      ansible.builtin.command:
-        cmd: /usr/local/bin/k3s-install.sh
-      environment:
-        INSTALL_K3S_SKIP_START: 'true'
-      changed_when: true
-      
-  creates: /usr/local/bin/k3s-install.sh
-
-- name: Download K3s binary
+- name: Download K3s binary (server)
   ansible.builtin.command:
     cmd: /usr/local/bin/k3s-install.sh
   environment:
     INSTALL_K3S_SKIP_START: 'true'
-  changed_when: true
+    K3S_TOKEN: '{{ k3s_token }}'
+    INSTALL_K3S_VERSION: '{{ k3s_version }}'
+  when: k3s_role == 'server'
+
+- name: Download K3s binary (agent)
+  ansible.builtin.command:
+    cmd: /usr/local/bin/k3s-install.sh agent
+  environment:
+    INSTALL_K3S_SKIP_START: 'true'
+    K3S_TOKEN: '{{ k3s_token }}'
+    K3S_URL: 'https://k8s.tartarus.us:6443'
+    INSTALL_K3S_VERSION: '{{ k3s_version }}'
+  when: k3s_role == 'agent'
 
 - name: Install longhorn dependencies
   ansible.builtin.apt:
@@ -73,7 +84,20 @@
       - curl
       - grep
       - util-linux
-      - nfs-common # NFS is used by the nfs-subdir provisioner, included here for convenience
+    state: present
+    update_cache: true
+
+- name: Install k3s dependencies
+  ansible.builtin.apt:
+    pkg:
+      - wireguard
+    state: present
+    update_cache: true
+
+- name: Install nfs-subdir dependencies
+  ansible.builtin.apt:
+    pkg:
+      - nfs-common
     state: present
     update_cache: true
 
@@ -107,11 +131,44 @@
     group: root
     mode: '0644'
   notify:
-    - Restart k3s
+    - Restart k3s agent
+    - Restart k3s server
 
-- name: Start and enable k3s
+
+- name: Start and enable k3s (server)
   ansible.builtin.systemd:
     name: k3s
     state: started
     enabled: true
     daemon-reload: true
+  when: k3s_role == 'server'
+
+- name: Start and enable k3s (agent)
+  ansible.builtin.systemd:
+    name: k3s-agent
+    state: started
+    enabled: true
+    daemon-reload: true
+  when: k3s_role == 'agent'
+
+- name: Add cname records for k8s controllers
+  community.general.cloudflare_dns:
+    domain: tartarus.us
+    record: k8s
+    type: CNAME
+    value: '{{ ansible_fqdn }}'
+    comment: "Created by Ansible"
+    api_token: '{{ cloudflare_token }}'
+    state: present
+  when: k3s_role == 'server'
+
+- name: Remove cname records for non-k8s controllers
+  community.general.cloudflare_dns:
+    domain: tartarus.us
+    record: k8s
+    type: CNAME
+    value: '{{ ansible_fqdn }}'
+    comment: "Created by Ansible"
+    api_token: '{{ cloudflare_token }}'
+    state: absent
+  when: k3s_role != 'server'
