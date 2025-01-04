@@ -1,0 +1,14 @@
+# SPDX-License-Identifier: MIT-0
+---
+# tasks file for tartarus_quicksync
+- name: Refresh package cache
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Install common packages
+  ansible.builtin.apt:
+    pkg:
+      - intel-media-va-driver-non-free
+      - vainfo
+    state: present
