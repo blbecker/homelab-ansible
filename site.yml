@@ -27,3 +27,13 @@
     - k3s
   roles:
     - tartarus_k3s
+
+- name: Configure Quicksync
+  hosts:
+    - romans
+  become: true
+  serial: 1
+  tags:
+    - quicksync
+  roles:
+    - tartarus_quicksync

@@ -11,6 +11,8 @@
     owner: root
     group: root
     mode: "0644"
+  notify:
+    - Refresh package cache
 
 - name: Refresh package cache
   ansible.builtin.apt:

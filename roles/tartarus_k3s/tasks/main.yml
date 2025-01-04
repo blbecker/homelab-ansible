@@ -1,6 +1,6 @@
 ---
 # tasks file for tartarus.k3s
-- name: Include vars 
+- name: Include vars
   ansible.builtin.include_vars: main.yml
 
 - name: Include secrets
@@ -151,12 +151,12 @@
     daemon-reload: true
   when: k3s_role == 'agent'
 
-- name: Add cname records for k8s controllers
+- name: Add A records for k8s controllers
   community.general.cloudflare_dns:
     domain: tartarus.us
     record: k8s
-    type: CNAME
-    value: '{{ ansible_fqdn }}'
+    type: A
+    value: '{{ ansible_default_ipv4.address }}'
     comment: "Created by Ansible"
     api_token: '{{ cloudflare_token }}'
     state: present
@@ -166,8 +166,8 @@
   community.general.cloudflare_dns:
     domain: tartarus.us
     record: k8s
-    type: CNAME
-    value: '{{ ansible_fqdn }}'
+    type: A
+    value: '{{ ansible_default_ipv4.address }}'
     comment: "Created by Ansible"
     api_token: '{{ cloudflare_token }}'
     state: absent

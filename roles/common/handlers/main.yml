@@ -1,2 +1,5 @@
 ---
 # handlers file for common
+- name: Refresh package cache
+  ansible.builtin.apt:
+    update_cache: true
