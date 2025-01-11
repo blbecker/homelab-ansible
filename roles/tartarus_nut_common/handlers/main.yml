@@ -1,0 +1,20 @@
+#SPDX-License-Identifier: MIT-0
+---
+# handlers file for roles/tartarus_nut_common
+- name: Restart nut server
+  ansible.builtin.systemd:
+    name: nut-server
+    state: restarted
+    daemon_reload: true
+
+- name: Restart nut client
+  ansible.builtin.systemd:
+    name: nut-client
+    state: restarted
+    daemon_reload: true
+
+- name: Restart nut-monitor
+  ansible.builtin.systemd:
+    name: nut-monitor
+    state: restarted
+    daemon_reload: true

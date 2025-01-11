@@ -1,0 +1,16 @@
+# {{ ansible_managed }}
+
+MONITOR qnapups@{{ tartarus_nut_client_upslist.ups1.host.dns }} 1 monusertartarus {{ nut_ups_secrets.tripplite }} slave
+
+POWERDOWNFLAG /etc/killpower
+SHUTDOWNCMD "/usr/local/tools/bin/nut-shutdown.sh"
+FINALDELAY 5
+
+NOTIFYCMD /usr/sbin/upssched
+
+NOTIFYFLAG FSD SYSLOG+WALL+EXEC
+NOTIFYFLAG SHUTDOWN SYSLOG+WALL+EXEC
+NOTIFYFLAG COMMBAD SYSLOG+WALL+EXEC
+NOTIFYFLAG COMMOK SYSLOG+WALL+EXEC
+NOTIFYFLAG NOCOMM SYSLOG+WALL+EXEC
+NOTIFYFLAG NOPARENT SYSLOG+WALL+EXEC

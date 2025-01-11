@@ -37,6 +37,7 @@
       - git
       - rsync
       - tmux
+      - plocate
     state: present
     update_cache: true
 

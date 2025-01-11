@@ -1,0 +1,51 @@
+---
+# tasks file for roles/tartarus_nut_server
+- name: Import nut common
+  ansible.builtin.import_role:
+    name: tartarus_nut_common
+
+- name: Include secrets
+  ansible.builtin.include_vars: secrets.yml
+  no_log: true
+
+- name: Include vars
+  ansible.builtin.include_vars: vars/main.yml
+
+- name: Install nut packages
+  ansible.builtin.package:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - nut-client
+
+- name: Configure nut-client
+  ansible.builtin.template:
+    src: '{{ item }}.j2'
+    dest: '/etc/nut/{{ item }}'
+    owner: root
+    group: nut
+    mode: '0640'
+  with_items:
+    - nut.conf
+  notify:
+    - Restart nut client
+
+- name: Configure upsmon
+  ansible.builtin.template:
+    src: '{{ item }}.j2'
+    dest: '/etc/nut/{{ item }}'
+    owner: root
+    group: nut
+    mode: "0640"
+  with_items:
+    - upsmon.conf
+    - upssched.conf
+  notify:
+    - Restart nut-monitor
+
+- name: Start and enable  the client software
+  ansible.builtin.systemd:
+    name: nut-client
+    enabled: true
+    state: started
+    daemon_reload: true

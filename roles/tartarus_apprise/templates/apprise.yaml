@@ -1,0 +1,2 @@
+---
+include: https://{{ tartarus_apprise_apprise_server }}/get/{{ tartarus_apprise_apprise_configuration }}

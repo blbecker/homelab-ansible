@@ -1,0 +1,7 @@
+---
+# vars file for roles/tartarus_nut_client
+tartarus_nut_client_upslist:
+  ups1:
+    host:
+      name: augustus
+      dns: augustus.tartarus.us

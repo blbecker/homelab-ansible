@@ -18,6 +18,7 @@ flannel-backend: wireguard-native
 node-name: "{{ node_name }}"
 {% endif %}
 
+node-label:
+  - "color.tartarus.us={{ color }}"
 
 server: https://k8s.tartarus.us:6443
-

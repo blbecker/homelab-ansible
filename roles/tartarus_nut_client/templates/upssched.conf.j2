@@ -1,0 +1,23 @@
+# {{ ansible_managed }}
+
+PIPEFN @STATEPATH@/upssched/upssched.pipe
+LOCKFN @STATEPATH@/upssched/upssched.lock
+
+CMDSCRIPT /usr/local/tools/bin/nut-notify.sh
+
+# === Timers ===
+
+AT FSD * START-TIMER fsd 5
+AT ONLINE * CANCEL-TIMER fsd
+
+AT COMMBAD * START-TIMER commbad 5
+AT COMMOK * CANCEL-TIMER commbad
+
+AT NOCOMM * START-TIMER nocomm 5
+AT COMMOK * CANCEL-TIMER nocomm
+
+# === Actions ===
+AT NOPARENT * EXECUTE noparent
+AT COMMOK * EXECUTE commok
+AT SHUTDOWN * EXECUTE shutdown
+AT FSD * EXECUTE fsd

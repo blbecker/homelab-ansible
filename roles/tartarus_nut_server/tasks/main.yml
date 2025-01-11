@@ -1,0 +1,59 @@
+---
+# tasks file for roles/tartarus_nut_server
+- name: Include secrets
+  ansible.builtin.include_vars: secrets.yml
+  no_log: true
+
+- name: Include common role
+  ansible.builtin.import_role:
+    name: tartarus_nut_common
+
+- name: Install nut packages
+  ansible.builtin.package:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - nut
+
+- name: Configure nut server
+  ansible.builtin.template:
+    src: '{{ item }}.j2'
+    dest: '/etc/nut/{{ item }}'
+    owner: root
+    group: nut
+    mode: "0640"
+  with_items:
+    - ups.conf
+    - nut.conf
+    - upsd.conf
+    - upsd.users
+  notify:
+    - Restart nut server
+
+- name: Configure upsmon
+  ansible.builtin.template:
+    src: '{{ item }}.j2'
+    dest: '/etc/nut/{{ item }}'
+    owner: root
+    group: nut
+    mode: "0640"
+  with_items:
+    - upsmon.conf
+    - upssched.conf
+  notify:
+    - Restart nut-monitor
+
+- name: Configure nut udev rules for USB UPS
+  ansible.builtin.template:
+    src: 99-nut-ups.rules.j2
+    dest: /etc/udev/rules.d/99-nut-ups.rules
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Enable and start nut-server
+  ansible.builtin.systemd:
+    name: nut-server
+    enabled: true
+    state: started
+    daemon_reload: true

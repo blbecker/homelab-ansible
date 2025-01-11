@@ -1,0 +1,3 @@
+---
+# vars file for tartarus_apprise
+tartarus_apprise_apprise_server: apprise.tartarus.us

@@ -1,0 +1,19 @@
+# {{ ansible_managed }}
+
+[monusertartarus]
+  password = {{ nut_ups_secrets.tripplite }}
+  upsmon secondary
+
+[monuserlocal]
+  password = {{ nut_ups_secrets.tripplite }}
+  upsmon primary
+
+[monuser]
+  password = secret
+  uspsmon secondary
+
+[benjamin]
+  password = {{ nut_benjamin_password }}
+  actions = set
+  actions = fsd
+  instcmds = all

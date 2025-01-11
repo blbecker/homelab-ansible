@@ -1,0 +1,31 @@
+---
+# tasks file for tartarus_apprise
+
+- name: Include secrets
+  ansible.builtin.include_vars: secrets.yml
+  no_log: true
+
+# Apprise is distributed as a pip package. We'll create a virtualenv for it to keep things clean on the servers.
+- name: Ensure that virtualenv is installed
+  ansible.builtin.package:
+    name: python3-virtualenv
+    state: present
+
+- name: Create file path for apprise
+  ansible.builtin.file:
+    path: /opt/apprise
+    state: directory
+
+- name: Install apprise into the virtualenv
+  ansible.builtin.pip:
+    name: apprise
+    virtualenv: /opt/apprise
+    state: present
+
+- name: Configure a global apprise configuration file
+  ansible.builtin.template:
+    src: apprise.yaml
+    dest: /etc/apprise.yaml
+    owner: root
+    group: root
+    mode: '0644'

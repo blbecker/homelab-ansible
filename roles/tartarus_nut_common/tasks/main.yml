@@ -1,0 +1,23 @@
+#SPDX-License-Identifier: MIT-0
+---
+# tasks file for roles/tartarus_nut_common
+- name: Include secrets
+  ansible.builtin.include_vars: secrets.yml
+  no_log: true
+
+
+- name: Deploy the nut shutdown script
+  ansible.builtin.template:
+    src: nut-shutdown.sh
+    dest: /usr/local/tools/bin/nut-shutdown.sh
+    owner: root
+    group: nut
+    mode: '0755'
+
+- name: Deploy nut notification script
+  ansible.builtin.template:
+    src: nut_ups_notify.sh
+    dest: /usr/local/tools/bin/nut-notify.sh
+    owner: root
+    group: nut
+    mode: '0755'
