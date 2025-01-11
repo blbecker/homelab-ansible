@@ -1,0 +1,22 @@
+---
+# tasks file for roles/tartarus_nut_server
+- name: Include secrets
+  ansible.builtin.include_vars: secrets.yml
+  no_log: true
+
+- name: Include vars
+  ansible.builtin.include_vars: vars/main.yml
+
+- name: Install nut packages
+  ansible.builtin.package:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - nut-client
+
+- name: Configure nut client
+  ansible.builtin.template:
+    src: '{{ item }}.j2'
+    dest: '/etc/nut/{{ item }}'
+  with_items:
+    - upsmon.conf

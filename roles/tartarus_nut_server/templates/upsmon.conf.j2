@@ -1,0 +1,5 @@
+# {{ ansible_managed }}
+
+MONITOR tripplite@localhost 1 admin {{ nut_ups_secrets.tripplite }} master
+
+NOTIFYCMD /usr/loca/tools/bin/notifycmd.sh
