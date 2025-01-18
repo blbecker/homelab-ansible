@@ -1,6 +1,6 @@
 ---
 - name: Bootstrap hosts
-  hosts: all
+  hosts: bootstrap 
   become: true
   roles:
     - tartarus_bootstrap
