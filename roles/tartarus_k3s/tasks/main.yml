@@ -1,11 +1,16 @@
 ---
 # tasks file for tartarus.k3s
-- name: Include vars
+- name: Include vars 
   ansible.builtin.include_vars: main.yml
 
 - name: Include secrets
   ansible.builtin.include_vars: secrets.yml
   no_log: true
+
+- name: "Ansible | Print multiple variable"
+  debug:
+    msg: |
+      The color is {{ color }}
 
 - name: Configure fs.inotify.max_queued_events
   ansible.posix.sysctl:

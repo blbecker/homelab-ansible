@@ -20,7 +20,8 @@
 
 - name: Configure k3s
   hosts:
-    - k3s
+    - blues
+    - greens
   become: true
   serial: 1
   tags:
