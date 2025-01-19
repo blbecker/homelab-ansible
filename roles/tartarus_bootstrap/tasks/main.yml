@@ -24,6 +24,7 @@
     password: '!'
     comment: "Ansible management user"
     uid: 9999
+  register: user
 
 - name: Set ansibles ssh public key
   tags:
@@ -44,6 +45,18 @@
     group: root
     mode: '0440'
     validate: 'visudo -cf %s'
+
+- name: Create a destination for ansible's kubeconfig
+  ansible.builtin.file:
+    path: "{{ user.home }}/.kube"
+    owner: ansible
+    group: ansible
+    mode: '0600'
+
+- name: Configure kubectl
+  ansible.builtin.copy:
+    src: ansible_kubecfg.yaml
+    dest: "{{ user.home }}/.kube/config"
 
 - name: Create an A record for this host
   community.general.cloudflare_dns:

@@ -7,18 +7,68 @@
     - name: Perform a dist-upgrade.
       ansible.builtin.apt:
         upgrade: dist
-        update_cache: yes
+        update_cache: true
 
     - name: Check if a reboot is required.
       ansible.builtin.stat:
         path: /var/run/reboot-required
-        get_checksum: no
+        get_checksum: false
       register: reboot_required_file
+
+    - name: Install dependencies for the kubernetes-core module
+      ansible.builtin.apt:
+        name:
+          - python3-kubernetes
+        state: present
+
+    - name: Read content of kubecconfig
+      ansible.builtin.slurp:
+        src: /home/ansible/.kube/config
+      register: kubeconfig_content
+
+    - name: Decode base64 encoded kubeconfig
+      # Be aware that the content of kubeconfig will be shown in logs
+      set_fact:
+        kubeconfig: "{{ kubeconfig_content['content'] | b64decode | from_yaml }}"
+
+    - name: Drain node
+      become: false
+      kubernetes.core.k8s_drain:
+        state: drain
+        name: "{{ ansible_hostname }}"
+        kubeconfig: "{{ kubeconfig }}"
+        pod_selectors:
+          - "app!=csi-attacher"
+          - "app!=csi-provisioner"
+          - "longhorn.io/component!=instance-manager"
+        delete_options:
+          delete_emptydir_data: true
+          ignore_daemonsets: true
+      retries: 3
+      delay: 30
+      when:
+        - reboot_required_file.stat.exists == true
+        - k3s_role is defined and k3s_role in ['agent','server']
 
     - name: Reboot the server (if required).
       ansible.builtin.reboot:
-      when: reboot_required_file.stat.exists == true
+        reboot_timeout: 1200
+        pre_reboot_delay: 60
+        post_reboot_delay: 120
+      when:
+        - reboot_required_file.stat.exists == true
+        - k3s_role is defined and k3s_role in ['agent','server']
+
+    - name: Mark node as schedulable.
+      become: false
+      kubernetes.core.k8s_drain:
+        state: uncordon
+        kubeconfig: "{{ kubeconfig }}"
+        name: "{{ ansible_hostname }}"
+      when:
+        - reboot_required_file.stat.exists == true
+        - k3s_role is defined and k3s_role in ['agent','server']
 
     - name: Remove dependencies that are no longer required.
       ansible.builtin.apt:
-        autoremove: yes 
+        autoremove: true
