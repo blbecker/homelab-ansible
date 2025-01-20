@@ -1,0 +1,4 @@
+#SPDX-License-Identifier: MIT-0
+---
+# vars file for roles/tartarus_monitoring
+smartd_email: smartd@mail.bckr.me

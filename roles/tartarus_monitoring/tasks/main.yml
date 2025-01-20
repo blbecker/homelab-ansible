@@ -1,0 +1,31 @@
+#SPDX-License-Identifier: MIT-0
+---
+# tasks file for roles/tartarus_monitoring
+- name: Install smartd
+  ansible.builtin.apt:
+    name: smartmontools
+    state: present
+
+- name: Configure smartd
+  ansible.builtin.template:
+    src: smartd.conf.j2
+    dest: /etc/smartd.conf
+    owner: root
+    group: root
+    mode: "0644"
+  notify:
+    - Restart smartd
+
+- name: Configure smartd notifications
+  ansible.builtin.template:
+    src: smartd-apprise.sh
+    dest: /etc/smartmontools/run.d/apprise.sh
+    owner: root
+    group: root
+    mode: "750"
+
+- name: Start and enable smartd
+  ansible.builtin.service:
+    name: smartd
+    state: started
+    enabled: true

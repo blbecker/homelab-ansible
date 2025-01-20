@@ -44,7 +44,7 @@
         delete_options:
           delete_emptydir_data: true
           ignore_daemonsets: true
-      retries: 3
+      retries: 40
       delay: 30
       when:
         - reboot_required_file.stat.exists == true

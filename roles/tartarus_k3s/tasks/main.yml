@@ -1,6 +1,6 @@
 ---
 # tasks file for tartarus.k3s
-- name: Include vars 
+- name: Include vars
   ansible.builtin.include_vars: main.yml
 
 - name: Include secrets
@@ -10,7 +10,7 @@
 - name: "Ansible | Print multiple variable"
   debug:
     msg: |
-      The color is {{ color }}
+      The color is {{ k8sColor }}
 
 - name: Configure fs.inotify.max_queued_events
   ansible.posix.sysctl:
@@ -40,15 +40,15 @@
 
 - name: Make config directory
   ansible.builtin.file:
-    path: '/etc/rancher/k3s'
-    mode: '0755'
+    path: "/etc/rancher/k3s"
+    mode: "0755"
     state: directory
 
 - name: Copy config values
   ansible.builtin.template:
     src: k3s-config.yaml.j2
-    dest: '/etc/rancher/k3s/config.yaml'
-    mode: '0644'
+    dest: "/etc/rancher/k3s/config.yaml"
+    mode: "0644"
   notify:
     - Restart k3s agent
     - Restart k3s server
@@ -60,25 +60,25 @@
     dest: /usr/local/bin/k3s-install.sh
     owner: root
     group: root
-    mode: '0755'
+    mode: "0755"
 
 - name: Download K3s binary (server)
   ansible.builtin.command:
     cmd: /usr/local/bin/k3s-install.sh
   environment:
-    INSTALL_K3S_SKIP_START: 'true'
-    K3S_TOKEN: '{{ k3s_token }}'
-    INSTALL_K3S_VERSION: '{{ k3s_version }}'
+    INSTALL_K3S_SKIP_START: "true"
+    K3S_TOKEN: "{{ k3s_token }}"
+    INSTALL_K3S_VERSION: "{{ k3s_version }}"
   when: k3s_role == 'server'
 
 - name: Download K3s binary (agent)
   ansible.builtin.command:
     cmd: /usr/local/bin/k3s-install.sh agent
   environment:
-    INSTALL_K3S_SKIP_START: 'true'
-    K3S_TOKEN: '{{ k3s_token }}'
-    K3S_URL: 'https://k8s.tartarus.us:6443'
-    INSTALL_K3S_VERSION: '{{ k3s_version }}'
+    INSTALL_K3S_SKIP_START: "true"
+    K3S_TOKEN: "{{ k3s_token }}"
+    K3S_URL: "https://k8s.tartarus.us:6443"
+    INSTALL_K3S_VERSION: "{{ k3s_version }}"
   when: k3s_role == 'agent'
 
 - name: Install longhorn dependencies
@@ -118,7 +118,7 @@
     state: directory
     owner: root
     group: root
-    mode: '0644'
+    mode: "0644"
 
 - name: Create a destination for the k3s override file
   ansible.builtin.file:
@@ -126,7 +126,7 @@
     state: directory
     owner: root
     group: root
-    mode: '0644'
+    mode: "0644"
 
 - name: Override the k3s unit file to set limits
   ansible.builtin.template:
@@ -134,11 +134,10 @@
     dest: /etc/systemd/system/k3s.service.d/override.conf
     owner: root
     group: root
-    mode: '0644'
+    mode: "0644"
   notify:
     - Restart k3s agent
     - Restart k3s server
-
 
 - name: Start and enable k3s (server)
   ansible.builtin.systemd:
@@ -161,9 +160,9 @@
     domain: tartarus.us
     record: k8s
     type: A
-    value: '{{ ansible_default_ipv4.address }}'
+    value: "{{ ansible_default_ipv4.address }}"
     comment: "Created by Ansible"
-    api_token: '{{ cloudflare_token }}'
+    api_token: "{{ cloudflare_token }}"
     state: present
   when: k3s_role == 'server'
 
@@ -172,8 +171,8 @@
     domain: tartarus.us
     record: k8s
     type: A
-    value: '{{ ansible_default_ipv4.address }}'
+    value: "{{ ansible_default_ipv4.address }}"
     comment: "Created by Ansible"
-    api_token: '{{ cloudflare_token }}'
+    api_token: "{{ cloudflare_token }}"
     state: absent
   when: k3s_role != 'server'
