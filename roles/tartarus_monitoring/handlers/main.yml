@@ -1,0 +1,8 @@
+#SPDX-License-Identifier: MIT-0
+---
+# handlers file for roles/tartarus_monitoring
+- name: Restart smartd
+  ansible.builtin.systemd:
+    name: smartd
+    state: restarted
+    daemon_reload: true
